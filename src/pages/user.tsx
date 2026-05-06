@@ -115,14 +115,21 @@ export default function UserPage() {
         type: `image/${extension}`,
       });
 
-      const filePath = `${user.id}/${Date.now()}_${fileName}`;
+      const safeUserId = user.id.replace(/[^a-zA-Z0-9_-]/g, "_");
+      const safeFileName = fileName.replace(/[^a-zA-Z0-9_.-]/g, "_");
+      const filePath = `${safeUserId}/${Date.now()}_${safeFileName}`;
+
+      console.log("[User] Uploading avatar to path:", filePath);
 
       const { error: uploadError } = await supabase.storage.from("avatars").upload(filePath, file, {
         cacheControl: "3600",
         upsert: true,
       });
 
-      if (uploadError) throw uploadError;
+      if (uploadError) {
+        console.error("[User] Avatar upload error:", uploadError);
+        throw uploadError;
+      }
 
       const {
         data: { publicUrl },
