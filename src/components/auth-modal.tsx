@@ -183,12 +183,16 @@ function AuthDialog({ open, onOpenChange, initialView }: AuthDialogProps) {
 
     try {
       if (view === "sign_in") {
-        const { error } = await supabase.auth.signInWithPassword({
+        console.log("[Auth] Attempting sign in with email:", email);
+        const { data, error } = await supabase.auth.signInWithPassword({
           email,
           password,
         });
 
+        console.log("[Auth] Sign in response:", { data, error });
+
         if (error) {
+          console.error("[Auth] Sign in error:", error);
           setErrorMessage(mapAuthErrorMessage(error.message, view));
           return;
         }
@@ -199,6 +203,8 @@ function AuthDialog({ open, onOpenChange, initialView }: AuthDialogProps) {
       }
 
       if (view === "sign_up") {
+        console.log("[Auth] Attempting sign up with email:", email);
+        console.log("[Auth] Redirect URL:", AUTH_DEEP_LINK_CALLBACK_URL);
         const { data, error } = await supabase.auth.signUp({
           email,
           password,
@@ -207,7 +213,10 @@ function AuthDialog({ open, onOpenChange, initialView }: AuthDialogProps) {
           },
         });
 
+        console.log("[Auth] Sign up response:", { data, error });
+
         if (error) {
+          console.error("[Auth] Sign up error:", error);
           setErrorMessage(mapAuthErrorMessage(error.message, view));
           return;
         }
@@ -225,11 +234,16 @@ function AuthDialog({ open, onOpenChange, initialView }: AuthDialogProps) {
       }
 
       if (view === "forgot_password") {
-        const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        console.log("[Auth] Attempting password reset for email:", email);
+        console.log("[Auth] Redirect URL:", AUTH_DEEP_LINK_CALLBACK_URL);
+        const { data, error } = await supabase.auth.resetPasswordForEmail(email, {
           redirectTo: AUTH_DEEP_LINK_CALLBACK_URL,
         });
 
+        console.log("[Auth] Password reset response:", { data, error });
+
         if (error) {
+          console.error("[Auth] Password reset error:", error);
           setErrorMessage(mapAuthErrorMessage(error.message, view));
           return;
         }
@@ -241,8 +255,13 @@ function AuthDialog({ open, onOpenChange, initialView }: AuthDialogProps) {
         return;
       }
 
-      const { error } = await supabase.auth.updateUser({ password });
+      console.log("[Auth] Attempting update password");
+      const { data, error } = await supabase.auth.updateUser({ password });
+
+      console.log("[Auth] Update password response:", { data, error });
+
       if (error) {
+        console.error("[Auth] Update password error:", error);
         setErrorMessage(mapAuthErrorMessage(error.message, view));
         return;
       }
@@ -250,6 +269,7 @@ function AuthDialog({ open, onOpenChange, initialView }: AuthDialogProps) {
       toast.success(t("auth.updatePassword.confirmationText"));
       handleOpenChange(false);
     } catch (error) {
+      console.error("[Auth] Unexpected error:", error);
       setErrorMessage(error instanceof Error ? error.message : "Unknown error");
     } finally {
       setSubmitting(false);
